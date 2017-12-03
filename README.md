@@ -13,22 +13,17 @@ This module uses the MagicMirror standard configuration file config.js. Availabl
 
 | Option | Values |
 | - | - |
-| apiKey | Api-Key for [football-data.org](https://api.football-data.org/index) the API used for aquiring data. A free API key can be aquired [here](https://api.football-data.org/client/register)
-
+| apiKey | Api-Key for [football-data.org](https://api.football-data.org/index) the API used for aquiring data. A free API key can be aquired [here](https://api.football-data.org/client/register).
 Users with an API key can look for new data (poll) 50 times per minute, users without once per minute. Faster polling may lead to a temporary ban, therefore users without an apiKey will have a restricted polling time. |
 | leagues | List of league-ID's you want to display. If you put more than one league the module switches automatically between them. A table with possible leagues and the related ID's can be found further down.
-
 #### Type: #### Integer
 #### Example: #### `[ 452, 453 ]` 1. Bundesliga 2017/18, 2. Bundesliga 2017/18
 #### Default: #### `[ 452 ]` |
 | showNames | Toggles if team-names are shown. 
-
 #### Default Value: #### `true` |
 | displayTime | Defines how long one league is shown, if you have more than one League in the leagues-value. In Milliseconds.
-
 #### Default Value: #### `60 * 1000 // 6000ms / 1min. |
 | showTables | Toggles if tables are shown if the league has a table. 
-
 #### Default Value: #### `true` |
 
 Here is an example of an entry in `config.js`
