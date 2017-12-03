@@ -3,13 +3,18 @@ var request = require('request');
 
 module.exports = NodeHelper.create(
     {
+        // Gets automatically called when the module starts
         start: function () {
             console.log("MagicMirror-FootballLeagues Started...");
         },
 
-        getLeagueIds: function (leagues, showLogos, showTables, apiKey) {
+        // Starts all data gathering background processes
+        startGatherData: function (leagues, showLogos, showTables, apiKey) 
+        {
+            // First, gathers all available league ids, gracefully handles if a league doesn't exist
             var self = this;
-            console.log(apiKey);
+            var leagueNames = {};
+
             var options = {
                 method: 'GET',
                 url: 'http://api.football-data.org/v1/competitions',
@@ -17,44 +22,54 @@ module.exports = NodeHelper.create(
                     'X-Auth-Token': apiKey
                 }
             };
-       
-            request(options, function (error, response, body) {
-                var competitions = JSON.parse(body);
-                var leagueIds = [];
 
-                for (var i = 0; i < leagues.length; i++) {
-                    for (var j = 0; j < competitions.length; j++)
+            
+            request(options,
+                function(error, response, body) {
+                    var competitions = JSON.parse(body);
+                    var leagueIds = [];
+
+                    for (var i = 0; i < leagues.length; i++) 
                     {
-                        if (competitions[j].id === leagues[i])
+                        for (var j = 0; j < competitions.length; j++) 
                         {
-                            leagueIds.push(competitions[j].id);
-
-                            self.getFixtures(leagueIds[i], apiKey);
-
-                            if (showTables)
+                            if (competitions[j].id === leagues[i]) 
                             {
-                                self.getTeams(competitions[j].id, apiKey);
-                                self.getTable(competitions[j].id, apiKey);
+                                leagueIds.push(competitions[j].id);
+                                leagueNames[competitions[j].id] = competitions[j].caption;
                             }
-
-                            if (showLogos)
-                            {
-                                self.getTeamLogo(competitions[j].id);
-                            }
-                            
-                            self.sendSocketNotification('LEAGUES', {
-                                name: competitions[j].caption,
-                                id: competitions[j].id
-                            });
                         }
                     }
+                });
+
+            // Second, start gathering background processes for all available leagues            
+            for (var i = 0; i < leagueIds.length; i++) 
+            {
+                self.getFixtures(leagueIds[i], apiKey);
+
+                if (showTables) 
+                {
+                    self.getTeams(leagueIds[i].id, apiKey);
+                    self.getTable(leagueIds[i].id, apiKey);
                 }
-            });
+
+                if (showLogos) 
+                {
+                    //self.getTeamLogo(leagueIds[i].id);
+                }
+
+                // Third, send notification that leagues exist
+                self.sendSocketNotification('LEAGUES',
+                    {
+                        name: leagueNames[leagueIds[i]].caption,
+                        id: leagueIds[i].id
+                    });
+            }
         },
 
+        // Constantly asks for Fixtures and sends notifications once they arrive
         getFixtures: function (leagueId, apiKey)
         {
-            console.log("Reached GetFixtures for League: " + leagueId);
             var self = this;
             var options = {
                 method: 'GET',
@@ -67,11 +82,10 @@ module.exports = NodeHelper.create(
             request(options, function (error, response, body) {
                 var data = JSON.parse(body);
                 var refreshTime = 20000;
-                var fixtures = data.fixtures;
 
                 self.sendSocketNotification('FIXTURES', {
                     leagueId: leagueId,
-                    fixtures: fixtures
+                    fixtures: data.fixtures
                 });
                 setTimeout(function () {
                     self.getFixtures(leagueId, apiKey);
@@ -79,9 +93,37 @@ module.exports = NodeHelper.create(
             });
         },
 
+        // Constantly asks for LeagueTables and sends notifications once they arrive
+        getTable: function (leagueId, apiKey)
+        {
+            var self = this;
+            var options = {
+                method: 'GET',
+                url: 'http://api.football-data.org/v1/competitions/' + leagueId.toString() + '/leagueTable',
+                headers: {
+                    'X-Auth-Token': apiKey
+                }
+            };
+            request(options,
+                function(error, response, body) {
+                    var data = JSON.parse(body);
+                    var refreshTime = 20000;
+
+                    self.sendSocketNotification('TABLE',
+                        {
+                            leagueId: leagueId,
+                            table: data.standing
+                        });
+                    setTimeout(function() {
+                            self.getTable(leagueId, apiKey);
+                        },
+                        refreshTime);
+                });
+        },
+
+        // Aquires TeamIDs
         getTeams: function (leagueId, apiKey)
         {
-            console.log("Reached GetTeams for League: " + leagueId);
             var self = this;
             var options = {
                 method: 'GET',
@@ -94,7 +136,6 @@ module.exports = NodeHelper.create(
             {
                 var teamIds = [];
                 var data = JSON.parse(body);
-                console.log("Teams " + data);
                 for (var i = 0; i < data.teams.length; i++)
                 {
                     var idString = data.teams[i]._links.self.href;
@@ -103,34 +144,6 @@ module.exports = NodeHelper.create(
                 }
 
                 //self.getLogos(teamIds);
-            });
-        },
-
-        getTable: function (leagueId, apiKey)
-        {
-            console.log("Reached GetTable for League: " + leagueId);
-            var self = this;
-            var options = {
-                method: 'POST',
-                url: 'http://api.football-data.org/v1/competitions/' + leagueId.toString() + '/leagueTable',
-                headers: {
-                    'X-Auth-Token': apiKey
-                }
-            };
-            request(options, function (error, response, body) {
-                var teamIds = [];
-                var data = JSON.parse(body);
-                console.log("Table " + data);
-                var refreshTime = 20000;
-                if (data.length == 1) {
-                    self.sendSocketNotification('TABLE', {
-                        leagueId: leagueId,
-                        table: data.standing
-                    });
-                    setTimeout(function () {
-                        self.getTable(leagueId, apiKey);
-                    }, refreshTime);
-                }
             });
         },
 
@@ -205,9 +218,11 @@ module.exports = NodeHelper.create(
             });
         },
 
+
+        // Receives startup notification, containing config data
         socketNotificationReceived: function (notification, payload) {
             if (notification === 'CONFIG') {
-                this.getLeagueIds(payload.leagues, payload.showLogos, payload.showTables, payload.apiKey);           
+                this.startGatherData(payload.leagues, payload.showLogos, payload.showTables, payload.apiKey);           
             }
         }
 });
