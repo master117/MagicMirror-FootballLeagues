@@ -38,7 +38,8 @@ Here is an example of an entry in `config.js`
 		leagues: [442],
         	showNames: true,
         	displayTime: 60 * 1000,
-        	showTables: true
+        	showTables: true,
+		apiKey: 'MySuperSecretKey'
 	}
 },
 ```
