@@ -84,7 +84,7 @@ Module.register("MagicMirror-FootballLeagues",
                 setTimeout(function ()
                 {
                     self.updateDom(1000);
-                }, this.config.displayTime / 4);
+                }, 1000);
 
                 return wrapper;
             }
@@ -211,17 +211,19 @@ Module.register("MagicMirror-FootballLeagues",
                 var title = document.createElement('header');
                 title.innerHTML = this.leagueNames[this.activeId];
                 wrapper.appendChild(title);
-
+               
                 var activeLeagueFixtures = this.fixtures[this.activeId];
                 var lastTime = 0;
+                var matchday = this.getMatchDay(activeLeagueFixtures);
+                console.log(matchday);
 
                 // Create a row for every fixture, possible a time row as well
                 for (var i = 0; i < activeLeagueFixtures.length; i++) 
                 {
-                    if (activeLeagueFixtures[i] !== undefined) 
-                    {
+                    if (activeLeagueFixtures[i] !== undefined && activeLeagueFixtures[i].matchday === matchday) 
+                    {                       
                         // Calculate local time
-                        var time = moment(activeLeagueFixtures[i].date).format('DD.MM - HH:mm');
+                        var time = moment(activeLeagueFixtures[i].date, "YYYY-MM-DDThh:mm:ssZ").format('DD.MM.YY - HH:mm');
 
                         // Build a time row if time is new
                         if (time !== lastTime) {
@@ -314,18 +316,57 @@ Module.register("MagicMirror-FootballLeagues",
                 }
 
                 // Change next view to table if available
-                if (this.tables[this.activeId] != undefined && this.config.showTables)
+                if (this.tables[this.activeId] != undefined && this.config.showTables) 
                 {
                     this.tableViewActive = true;
-                    setTimeout(function() {
-                            self.updateDom(1000);
-                        },
-                        this.config.displayTime / 4);
                 }
+
+                setTimeout(function() {
+                            self.updateDom(1000);
+                        }, this.config.displayTime / 4);                
 
                 wrapper.appendChild(matches);
                 return wrapper;
             }
+        },
+
+        getMatchDay: function (activeLeagueFixtures) 
+        {
+            //Find out the current matchDay
+            var startOfThisWeek = moment().startOf('isoWeek');
+            var endOfThisWeek = moment().endOf('isoWeek');
+            var dateOfFirstMatch = moment(activeLeagueFixtures[0].date, "YYYY-MM-DDThh:mm:ssZ");
+            var dateOfLastMatch = moment(activeLeagueFixtures[activeLeagueFixtures.length - 1].date, "YYYY-MM-DDThh:mm:ssZ");
+
+            // Matchday: No Fixtures
+            if (activeLeagueFixtures.length == 0) 
+            {
+                return 0;
+            }
+
+            // Matchday: Season has not started yet, first game is later than now
+            if (dateOfFirstMatch > endOfThisWeek) 
+            {
+                return 1;
+            }
+
+            // Matchday: Season has ended, last game was earlier than now
+            if (dateOfLastMatch < startOfThisWeek)
+            {
+                return activeLeagueFixtures[activeLeagueFixtures.length - 1].matchday;
+            }
+
+            // Matchday: We are mid season, looking for a game in this week
+            for (var i = 0; i < activeLeagueFixtures.length; i++) 
+            {
+                if (moment(activeLeagueFixtures[i].date, "YYYY-MM-DDThh:mm:ssZ") > startOfThisWeek) 
+                {
+                    return activeLeagueFixtures[i].matchday;
+                }
+            }
+
+            // No Matchday found
+            return 1;
         },
 
 

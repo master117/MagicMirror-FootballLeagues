@@ -22,6 +22,13 @@ module.exports = NodeHelper.create(
                 }
             };
 
+            //Calculate maximum polling speed
+            var refreshTime = 5000 * 2 * leagues.length;
+            if (apiKey === "")
+            {
+                refreshTime = 70000 * 2 * leagues.length;;
+            }
+
             // Request all available leagues
             request(options,
                 function(error, response, body) {
@@ -35,12 +42,12 @@ module.exports = NodeHelper.create(
                             if (competitions[j].id === leagues[i]) 
                             {
                                 // Second, start gathering background processes for available league  
-                                self.getFixtures(competitions[j].id, apiKey);
+                                self.getFixtures(competitions[j].id, apiKey, refreshTime);
 
                                 if (showTables) 
                                 {
                                     self.getTeams(competitions[j].id, apiKey);
-                                    self.getTable(competitions[j].id, apiKey);
+                                    self.getTable(competitions[j].id, apiKey, refreshTime);
                                 }
 
                                 if (showLogos) 
@@ -61,7 +68,7 @@ module.exports = NodeHelper.create(
         },
 
         // Constantly asks for Fixtures and sends notifications once they arrive
-        getFixtures: function (leagueId, apiKey)
+        getFixtures: function (leagueId, apiKey, refreshTime)
         {
             var self = this;
             var options = {
@@ -73,24 +80,20 @@ module.exports = NodeHelper.create(
             };
 
             request(options, function (error, response, body) {
-                var data = JSON.parse(body);
-                var refreshTime = 5000;
-                if (apiKey === "") {
-                    refreshTime = 60000;
-                }
-
+                var data = JSON.parse(body);              
+                
                 self.sendSocketNotification('FIXTURES', {
                     leagueId: leagueId,
                     fixtures: data.fixtures
                 });
                 setTimeout(function () {
-                    self.getFixtures(leagueId, apiKey);
+                    self.getFixtures(leagueId, apiKey, refreshTime);
                 }, refreshTime);
             });
         },
 
         // Constantly asks for LeagueTables and sends notifications once they arrive
-        getTable: function (leagueId, apiKey)
+        getTable: function (leagueId, apiKey, refreshTime)
         {
             var self = this;
             var options = {
@@ -100,14 +103,10 @@ module.exports = NodeHelper.create(
                     'X-Auth-Token': apiKey
                 }
             };
+
             request(options, function (error, response, body) 
             {
                 var data = JSON.parse(body);
-                var refreshTime = 5000;
-                if (apiKey === "")
-                {
-                    refreshTime = 60000;
-                }
 
                 self.sendSocketNotification('TABLE',
                 {
@@ -115,7 +114,7 @@ module.exports = NodeHelper.create(
                     table: data.standing
                 });
                 setTimeout(function() {
-                    self.getTable(leagueId, apiKey);
+                    self.getTable(leagueId, apiKey, refreshTime);
                 },
                 refreshTime);
             });
