@@ -7,7 +7,8 @@ Module.register("MagicMirror-FootballLeagues",
             showTables: true,
             showNames: true,
             showLogos: false,
-            displayTime: 30 * 1000,            
+            displayTime: 60 * 1000,  
+            apiKey: ""
         },
 
         // Gets automatically called when the module starts

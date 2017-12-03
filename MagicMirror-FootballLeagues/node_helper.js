@@ -13,7 +13,6 @@ module.exports = NodeHelper.create(
         {
             // First, gathers all available league ids, gracefully handles if a league doesn't exist
             var self = this;
-            var leagueNames = {};
 
             var options = {
                 method: 'GET',
@@ -23,48 +22,42 @@ module.exports = NodeHelper.create(
                 }
             };
 
-            
+            // Request all available leagues
             request(options,
                 function(error, response, body) {
                     var competitions = JSON.parse(body);
-                    var leagueIds = [];
-
+                    
                     for (var i = 0; i < leagues.length; i++) 
                     {
                         for (var j = 0; j < competitions.length; j++) 
-                        {
+                        {                          
+                            // Check if current league fits a competition, if it does, the league is available
                             if (competitions[j].id === leagues[i]) 
                             {
-                                leagueIds.push(competitions[j].id);
-                                leagueNames[competitions[j].id] = competitions[j].caption;
+                                // Second, start gathering background processes for available league  
+                                self.getFixtures(competitions[j].id, apiKey);
+
+                                if (showTables) 
+                                {
+                                    self.getTeams(competitions[j].id, apiKey);
+                                    self.getTable(competitions[j].id, apiKey);
+                                }
+
+                                if (showLogos) 
+                                {
+                                    //self.getTeamLogo(competitions[j].id);
+                                }
+
+                                // Third, send notification that leagues exist
+                                self.sendSocketNotification('LEAGUES',
+                                    {
+                                        name: competitions[j].caption,
+                                        id: competitions[j].id
+                                    });
                             }
                         }
                     }
                 });
-
-            // Second, start gathering background processes for all available leagues            
-            for (var i = 0; i < leagueIds.length; i++) 
-            {
-                self.getFixtures(leagueIds[i], apiKey);
-
-                if (showTables) 
-                {
-                    self.getTeams(leagueIds[i].id, apiKey);
-                    self.getTable(leagueIds[i].id, apiKey);
-                }
-
-                if (showLogos) 
-                {
-                    //self.getTeamLogo(leagueIds[i].id);
-                }
-
-                // Third, send notification that leagues exist
-                self.sendSocketNotification('LEAGUES',
-                    {
-                        name: leagueNames[leagueIds[i]].caption,
-                        id: leagueIds[i].id
-                    });
-            }
         },
 
         // Constantly asks for Fixtures and sends notifications once they arrive
@@ -81,7 +74,10 @@ module.exports = NodeHelper.create(
 
             request(options, function (error, response, body) {
                 var data = JSON.parse(body);
-                var refreshTime = 20000;
+                var refreshTime = 5000;
+                if (apiKey === "") {
+                    refreshTime = 60000;
+                }
 
                 self.sendSocketNotification('FIXTURES', {
                     leagueId: leagueId,
@@ -104,21 +100,25 @@ module.exports = NodeHelper.create(
                     'X-Auth-Token': apiKey
                 }
             };
-            request(options,
-                function(error, response, body) {
-                    var data = JSON.parse(body);
-                    var refreshTime = 20000;
+            request(options, function (error, response, body) 
+            {
+                var data = JSON.parse(body);
+                var refreshTime = 5000;
+                if (apiKey === "")
+                {
+                    refreshTime = 60000;
+                }
 
-                    self.sendSocketNotification('TABLE',
-                        {
-                            leagueId: leagueId,
-                            table: data.standing
-                        });
-                    setTimeout(function() {
-                            self.getTable(leagueId, apiKey);
-                        },
-                        refreshTime);
+                self.sendSocketNotification('TABLE',
+                {
+                    leagueId: leagueId,
+                    table: data.standing
                 });
+                setTimeout(function() {
+                    self.getTable(leagueId, apiKey);
+                },
+                refreshTime);
+            });
         },
 
         // Aquires TeamIDs
