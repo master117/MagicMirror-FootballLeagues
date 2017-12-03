@@ -6,7 +6,7 @@ League Table
 ![alt text](https://i.imgur.com/y1v9sow.png "Logo Title Text 1")
 
 Fixtures
-![alt text](https://i.imgur.com/pJwU1Ua.png"Logo Title Text 1")
+![alt text](https://i.imgur.com/pJwU1Ua.png "Logo Title Text 1")
 
 
 ## Instalation
