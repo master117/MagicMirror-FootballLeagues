@@ -9,12 +9,18 @@ Fixtures
 ![alt text](https://i.imgur.com/pJwU1Ua.png "Logo Title Text 1")
 
 
-## Instalation
+## Installation
 
 Navigate into your MagicMirror's modules folder and execute 
 ```git
 git clone https://github.com/master117/MagicMirror-FootballLeagues
 ```
+
+Install request (should be installed by default/MM)
+```nodejs
+npm install request
+```
+
 
 ## Configuration
 This module uses the MagicMirror standard configuration file config.js. Available options are:
