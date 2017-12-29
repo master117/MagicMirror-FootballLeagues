@@ -75,6 +75,7 @@ Module.register("MagicMirror-FootballLeagues",
             // Create the base element
             var self = this;
             var wrapper = document.createElement("div");
+            //console.log("Updating Football League");
 
             // return nothing if no data exists
             if (this.activeId == -1 || this.fixtures.length == 0)
@@ -214,8 +215,7 @@ Module.register("MagicMirror-FootballLeagues",
                
                 var activeLeagueFixtures = this.fixtures[this.activeId];
                 var lastTime = 0;
-                var matchday = this.getMatchDay(activeLeagueFixtures);
-                console.log(matchday);
+                var matchday = this.getMatchDay(activeLeagueFixtures);               
 
                 // Create a row for every fixture, possible a time row as well
                 for (var i = 0; i < activeLeagueFixtures.length; i++) 
