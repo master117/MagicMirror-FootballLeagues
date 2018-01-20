@@ -32,6 +32,7 @@ This module uses the MagicMirror standard configuration file config.js. Availabl
 | showNames | Toggles if team-names are shown. <br> <br><b> Default Value: </b> `true` |
 | displayTime | Defines how long one league is shown, if you have more than one League in the leagues-value. In Milliseconds. <br><br><b> Default Value: </b> `60 * 1000` which is 6000 ms or 1 min. |
 | showTables | Toggles if tables are shown if the league has a table. <br><br><b> Default Value: </b> `true` |
+| showLogos | Toggles if Logos are shown if logos exist! <br><br><b> Default Value: </b> `true` |
 
 Here is an example of an entry in `config.js`
 
@@ -45,6 +46,7 @@ Here is an example of an entry in `config.js`
         	showNames: true,
         	displayTime: 60 * 1000,
         	showTables: true,
+		showLogos: true,
 		apiKey: 'MySuperSecretKey'
 	}
 },

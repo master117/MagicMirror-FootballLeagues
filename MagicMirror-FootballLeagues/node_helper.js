@@ -46,13 +46,12 @@ module.exports = NodeHelper.create(
 
                                 if (showTables) 
                                 {
-                                    self.getTeams(competitions[j].id, apiKey);
                                     self.getTable(competitions[j].id, apiKey, refreshTime);
                                 }
 
                                 if (showLogos) 
                                 {
-                                    //self.getTeamLogo(competitions[j].id);
+                                    self.getTeamLogos(competitions[j].id, apiKey);
                                 }
 
                                 // Third, send notification that leagues exist
@@ -125,8 +124,8 @@ module.exports = NodeHelper.create(
             });
         },
 
-        // Aquires TeamIDs
-        getTeams: function (leagueId, apiKey)
+        // Aquires TeamLogos
+        getTeamLogos: function (leagueId, apiKey)
         {
             var self = this;
             var options = {
@@ -138,90 +137,33 @@ module.exports = NodeHelper.create(
             };
             request(options, function (error, response, body)
             {
-                var teamIds = [];
+                var teamLogos = {};
                 var data = JSON.parse(body);
+
+                for (var i = 0; i < data.teams.length; i++)
+                {
+                    var logo = data.teams[i].crestUrl;
+
+                    var idString = data.teams[i]._links.self.href;
+                    idString = idString.substring(idString.lastIndexOf("/") + 1, idString.length);
+
+                    teamLogos[idString] = logo;
+                }
+
+                self.sendSocketNotification('LOGO',
+                    {
+                        leagueId: leagueId,
+                        table: teamLogos
+                    });
+                /*
                 for (var i = 0; i < data.teams.length; i++)
                 {
                     var idString = data.teams[i]._links.self.href;
                     idString = idString.substring(idString.lastIndexOf("/") + 1, idString.length);
                     teamIds.push(idString);
-                }
-
-                //self.getLogos(teamIds);
+                }*/
             });
         },
-
-        getTeamLogo: function (teamId) {
-            var self = this;
-            var options = {
-                method: 'GET',
-                url: 'https://www.ta4-images.de/ta/images/teams/' + teamId + '/64',
-                headers: {
-                    'Host': 'www.ta4-images.de',
-                    'Accept': '*/*',
-                    'Accept-Language': 'de-de',
-                    'Connection': 'keep-alive',
-                    'Accept-Encoding': 'gzip, deflate',
-                    'User-Agent': 'TorAlarm/20161206 CFNetwork/808.1.4 Darwin/16.1.0'
-                },
-                encoding: null
-            };
-
-
-            request(options, function (error, response, body) {
-                if (error) throw new Error(error);
-                var image = new Buffer(body).toString('base64');
-                self.sendSocketNotification('LOGO', {
-                    teamId: teamId,
-                    image: image
-                });
-
-            });
-
-
-        },
-
-        getLogos: function (teamIds) {
-            var self = this;
-            var logos = [];
-            for (var i = 0; i < teamIds.length; i++) {
-                self.getTeamLogo(teamIds[i]);
-            }
-        },
-
-        getLogosFromScores: function (leagueId) {
-            var self = this;
-            var options = {
-                method: 'POST',
-                url: 'https://www.ta4-data.de/ta/data/competitions/' + leagueId.toString() + '/matches/round/0',
-                headers: {
-                    'Host': 'ta4-data.de',
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'Connection': 'keep-alive',
-                    'Accept': '*/*',
-                    'User-Agent': 'TorAlarm/20161202 CFNetwork/808.1.4 Darwin/16.1.0',
-                    'Accept-Language': 'de-de',
-                    'Accept-Encoding': 'gzip',
-                    'Content-Length': '49'
-                },
-                body: '{"lng":"de-DE","device_type":0,"decode":"decode"}',
-                form: false
-            };
-
-            request(options, function (error, response, body) {
-                var data = JSON.parse(body);
-                var standings = data.data;
-                for (var i = 0; i < standings.length; i++) {
-                    if (standings[i].matches !== undefined) {
-                        for (var j = 0; j < standings[i].matches.length; j++) {
-                            self.getTeamLogo(standings[i].matches[j].team1_id);
-                            self.getTeamLogo(standings[i].matches[j].team2_id);
-                        }
-                    }
-                }
-            });
-        },
-
 
         // Receives startup notification, containing config data
         socketNotificationReceived: function (notification, payload) {
