@@ -3,10 +3,10 @@ This is Magic [Mirror Module](https://github.com/MichMich/MagicMirror) based on 
 
 ## Preview
 League Table
-![alt text](https://i.imgur.com/y1v9sow.png "Logo Title Text 1")
+![alt text](https://i.imgur.com/8QORZUX.png "Logo Title Text 1")
 
 Fixtures
-![alt text](https://i.imgur.com/pJwU1Ua.png "Logo Title Text 1")
+![alt text](https://i.imgur.com/8dMv25Y.png "Logo Title Text 1")
 
 
 ## Installation
