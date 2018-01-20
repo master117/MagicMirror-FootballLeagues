@@ -80,7 +80,12 @@ module.exports = NodeHelper.create(
             };
 
             request(options, function (error, response, body) {
-                var data = JSON.parse(body);              
+                try {	
+			var data = JSON.parse(body);
+    		} catch(e) {
+        		alert(e); // error in the above string (in this case, yes)!
+			console.log(body);
+    		}              
                 
                 self.sendSocketNotification('FIXTURES', {
                     leagueId: leagueId,
