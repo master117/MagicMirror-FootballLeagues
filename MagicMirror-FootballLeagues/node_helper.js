@@ -9,7 +9,7 @@ module.exports = NodeHelper.create(
         },
 
         // Starts all data gathering background processes
-        startGatherData: function (leagues, showLogos, showTables, apiKey) 
+        startGatherData: function (leagues, showLogos, showTables, apiKey, id) 
         {
             // First, gathers all available league ids, gracefully handles if a league doesn't exist
             var self = this;
@@ -42,20 +42,20 @@ module.exports = NodeHelper.create(
                             if (competitions[j].id === leagues[i]) 
                             {
                                 // Second, start gathering background processes for available league  
-                                self.getFixtures(competitions[j].id, apiKey, refreshTime);
+                                self.getFixtures(competitions[j].id, apiKey, refreshTime, id);
 
                                 if (showTables) 
                                 {
-                                    self.getTable(competitions[j].id, apiKey, refreshTime);
+                                    self.getTable(competitions[j].id, apiKey, refreshTime, id);
                                 }
 
                                 if (showLogos) 
                                 {
-                                    self.getTeamLogos(competitions[j].id, apiKey);
+                                    self.getTeamLogos(competitions[j].id, apiKey, id);
                                 }
 
                                 // Third, send notification that leagues exist
-                                self.sendSocketNotification('LEAGUES',
+                                self.sendSocketNotification('LEAGUES'+id,
                                     {
                                         name: competitions[j].caption,
                                         id: competitions[j].id
@@ -67,7 +67,7 @@ module.exports = NodeHelper.create(
         },
 
         // Constantly asks for Fixtures and sends notifications once they arrive
-        getFixtures: function (leagueId, apiKey, refreshTime)
+        getFixtures: function (leagueId, apiKey, refreshTime, id)
         {
             var self = this;
             var options = {
@@ -86,7 +86,7 @@ module.exports = NodeHelper.create(
 			console.log(body);
     		}              
                 
-                self.sendSocketNotification('FIXTURES', {
+                self.sendSocketNotification('FIXTURES' + id, {
                     leagueId: leagueId,
                     fixtures: data.fixtures
                 });
@@ -97,7 +97,7 @@ module.exports = NodeHelper.create(
         },
 
         // Constantly asks for LeagueTables and sends notifications once they arrive
-        getTable: function (leagueId, apiKey, refreshTime)
+        getTable: function (leagueId, apiKey, refreshTime, id)
         {
             var self = this;
             var options = {
@@ -112,7 +112,7 @@ module.exports = NodeHelper.create(
             {
                 var data = JSON.parse(body);
 
-                self.sendSocketNotification('TABLE',
+                self.sendSocketNotification('TABLE' + id,
                 {
                     leagueId: leagueId,
                     table: data.standing
@@ -125,7 +125,7 @@ module.exports = NodeHelper.create(
         },
 
         // Aquires TeamLogos
-        getTeamLogos: function (leagueId, apiKey)
+        getTeamLogos: function (leagueId, apiKey, id)
         {
             var self = this;
             var options = {
@@ -150,7 +150,7 @@ module.exports = NodeHelper.create(
                     teamLogos[idString] = logo;
                 }
 
-                self.sendSocketNotification('LOGO',
+                self.sendSocketNotification('LOGO' + id,
                     {
                         leagueId: leagueId,
                         table: teamLogos
@@ -168,7 +168,7 @@ module.exports = NodeHelper.create(
         // Receives startup notification, containing config data
         socketNotificationReceived: function (notification, payload) {
             if (notification === 'CONFIG') {
-                this.startGatherData(payload.leagues, payload.showLogos, payload.showTables, payload.apiKey);           
+                this.startGatherData(payload.leagues, payload.showLogos, payload.showTables, payload.apiKey, payload.id);           
             }
         }
 });

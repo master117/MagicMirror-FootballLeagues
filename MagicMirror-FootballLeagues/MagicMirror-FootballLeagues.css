@@ -10,23 +10,23 @@
 }
 
 .MMM-SoccerLiveScore-team1_logo {
-    margin-left: 10px;
     position: relative;
     top: 2px;
 }
 
 .MMM-SoccerLiveScore-team2_logo {
-    margin-right: 10px;
     position: relative;
     top: 2px;
 }
 
 .MMM-SoccerLiveScore-team1_score {
-    margin-left: 5px;
 }
 
 .MMM-SoccerLiveScore-team2_score {
-    margin-right: 5px;
+}
+
+.MMM-SoccerLiveScore-divider {
+    text-align: center;
 }
 
 .MMM-SoccerLiveScore-red {
@@ -36,4 +36,18 @@
 .fa {
     align-content: left;
     text-align: left;
+}
+
+td {
+    padding: 0;
+    margin: 0;
+}
+
+th {
+    padding: 0;
+    margin: 0;
+}
+
+table {
+    border-collapse: collapse;
 }
