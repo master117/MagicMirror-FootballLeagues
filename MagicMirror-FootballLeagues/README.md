@@ -1,3 +1,0 @@
-﻿# MagicMirror-FootballLeagues
-
-
