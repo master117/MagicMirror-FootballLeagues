@@ -27,24 +27,46 @@ module.exports = NodeHelper.create(
             {
                 for (var j = 0; j < leagues.length; j++) 
                 {
-                    // Second, start gathering background processes for available league  
-                    self.getFixtures(leagues[j], apiKey, refreshTime, id);
+                    var league = leagues[j];
 
-                    if (showTables) 
-                    {
-                        self.getTable(leagues[j], apiKey, refreshTime, id);
-                    }
+                    var options = {
+                        method: 'GET',
+                        url: 'http://api.football-data.org/v1/competitions/' + league.toString(),
+                        headers: {
+                            'X-Auth-Token': apiKey
+                        }
+                    };
 
-                    if (showLogos) 
-                    {
-                        self.getTeamLogos(leagues[j], apiKey, id);
-                    }
-
-                    // Third, send notification that leagues exist
-                    self.sendSocketNotification('LEAGUES' + id,
+                    request(options,
+                        function (error, response, body)
                         {
-                            name: "Competition has not started yet",
-                            id: leagues[j]
+                            var competition = JSON.parse(body);
+
+                            // Second, start gathering background processes for available league 
+                            self.getFixtures(league, apiKey, refreshTime, id);
+
+                            if (showTables) 
+                            {
+                                self.getTable(league, apiKey, refreshTime, id);
+                            }
+
+                            if (showLogos) 
+                            {
+                                self.getTeamLogos(league, apiKey, id);
+                            }
+
+                            var cap = ""
+                            if (competition.hasOwnProperty('caption'))
+                            {
+                                cap = competition.caption
+                            }
+
+                            // Third, send notification that leagues exist
+                            self.sendSocketNotification('LEAGUES' + id,
+                                {
+                                    name: cap,
+                                    id: league
+                                });
                         });
                 }
             }
