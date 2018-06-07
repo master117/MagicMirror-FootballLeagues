@@ -7,6 +7,7 @@ Module.register("MagicMirror-FootballLeagues",
             showTables: true,
             showNames: true,
             showLogos: true,
+            showUnavailable: false,
             displayTime: 60 * 1000,  
             width: 0,
             apiKey: ""
@@ -42,12 +43,12 @@ Module.register("MagicMirror-FootballLeagues",
             this.crawledIdsList = [];
             this.activeId = -1;
 
-            console.log("Started with ids: " + this.config.leagues);
+            console.log("Started with ids: " + this.config.leagues);          
 
             // Send our current config to node_helper, starting its polling
             this.sendSocketNotification('CONFIG', {
                 leagues: this.config.leagues, showLogos: this.config.showLogos,
-                showTables: this.config.showTables, apiKey: this.config.apiKey, id: this.identifier });
+                showTables: this.config.showTables, apiKey: this.config.apiKey, id: this.identifier, showUnavailable: this.config.showUnavailable });
 
             // Set the league that should be displayed, starting with the arrays first entry
             this.changeLeague(this, 0);
@@ -173,46 +174,111 @@ Module.register("MagicMirror-FootballLeagues",
                 // Create Table Content
                 var table = this.tables[this.activeId];
 
-                for (var i = 0; i < table.length; i++) 
+                //console.log(table);
+                if (table.hasOwnProperty('A'))
                 {
-                    var place = document.createElement('tr');
+                    console.log("Da Truth");
+                    console.log(table)
+                    for (var tab in table)
+                    {
+                        if (table.hasOwnProperty(tab))
+                        {
+                            var subtable = table[tab];
+                            console.log(tab);
+                            console.log(subtable);
 
-                    var number = document.createElement('td');
-                    number.innerHTML = i + 1;
-                    place.appendChild(number);
+                            for (var i = 0; i < subtable.length; i++) 
+                            {
+                                console.log(subtable[i]);
+                                var place = document.createElement('tr');
 
-                    
-                    if (this.config.showLogos) {
-                        var team_logo_cell = document.createElement('td');
-                        var team_logo_image = document.createElement('img');
-                        team_logo_image.className = 'MMM-SoccerLiveScore-team_logo';
-                        team_logo_image.src = table[i].crestURI;
-                        team_logo_image.width = 20;
-                        team_logo_image.height = 20;
-                        team_logo_cell.appendChild(team_logo_image);
-                        place.appendChild(team_logo_cell);
+                                var number = document.createElement('td');
+                                number.innerHTML = i + 1;
+                                place.appendChild(number);
+
+
+                                if (this.config.showLogos)
+                                {
+                                    var team_logo_cell = document.createElement('td');
+                                    var team_logo_image = document.createElement('img');
+                                    team_logo_image.className = 'MMM-SoccerLiveScore-team_logo';
+                                    team_logo_image.src = subtable[i].crestURI;
+                                    team_logo_image.width = 20;
+                                    team_logo_image.height = 20;
+                                    team_logo_cell.appendChild(team_logo_image);
+                                    place.appendChild(team_logo_cell);
+                                }
+
+                                if (this.config.showNames)
+                                {
+                                    var team_name = document.createElement('td');
+                                    team_name.setAttribute('align', 'left');
+                                    team_name.innerHTML = subtable[i].team;
+                                    place.appendChild(team_name);
+                                }
+
+                                var games = document.createElement('td');
+                                games.innerHTML = subtable[i].playedGames;
+                                place.appendChild(games);
+
+                                var goals = document.createElement('td');
+                                goals.innerHTML = subtable[i].goalDifference;
+                                place.appendChild(goals);
+
+                                var points = document.createElement('td');
+                                points.innerHTML = subtable[i].points;
+                                place.appendChild(points);
+
+                                places.appendChild(place);
+                            }
+                        }
                     }
+                }
+                else
+                {
+                    for (var i = 0; i < table.length; i++) 
+                    {
+                        var place = document.createElement('tr');
 
-                    if (this.config.showNames) {
-                        var team_name = document.createElement('td');
-                        team_name.setAttribute('align', 'left');
-                        team_name.innerHTML = table[i].teamName;
-                        place.appendChild(team_name);
+                        var number = document.createElement('td');
+                        number.innerHTML = i + 1;
+                        place.appendChild(number);
+
+
+                        if (this.config.showLogos)
+                        {
+                            var team_logo_cell = document.createElement('td');
+                            var team_logo_image = document.createElement('img');
+                            team_logo_image.className = 'MMM-SoccerLiveScore-team_logo';
+                            team_logo_image.src = table[i].crestURI;
+                            team_logo_image.width = 20;
+                            team_logo_image.height = 20;
+                            team_logo_cell.appendChild(team_logo_image);
+                            place.appendChild(team_logo_cell);
+                        }
+
+                        if (this.config.showNames)
+                        {
+                            var team_name = document.createElement('td');
+                            team_name.setAttribute('align', 'left');
+                            team_name.innerHTML = table[i].teamName;
+                            place.appendChild(team_name);
+                        }
+
+                        var games = document.createElement('td');
+                        games.innerHTML = table[i].playedGames;
+                        place.appendChild(games);
+
+                        var goals = document.createElement('td');
+                        goals.innerHTML = table[i].goalDifference;
+                        place.appendChild(goals);
+
+                        var points = document.createElement('td');
+                        points.innerHTML = table[i].points;
+                        place.appendChild(points);
+
+                        places.appendChild(place);
                     }
-
-                    var games = document.createElement('td');
-                    games.innerHTML = table[i].playedGames;
-                    place.appendChild(games);
-
-                    var goals = document.createElement('td');
-                    goals.innerHTML = table[i].goalDifference;
-                    place.appendChild(goals);
-
-                    var points = document.createElement('td');
-                    points.innerHTML = table[i].points;
-                    place.appendChild(points);
-
-                    places.appendChild(place);
                 }
 
                 // Change next view to fixtures
