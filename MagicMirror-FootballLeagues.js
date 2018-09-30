@@ -3,7 +3,7 @@ Module.register("MagicMirror-FootballLeagues",
         // Default module config
         defaults:
         {
-            leagues: [452],
+            leagues: [2002],
             showTables: true,
             showNames: true,
             showLogos: true,
@@ -36,7 +36,7 @@ Module.register("MagicMirror-FootballLeagues",
         {
             this.loadet = false;
             this.logos = {};
-            this.fixtures = {};
+            this.matches = {};
             this.leagueNames = {};
             this.tables = {};
             this.tableViewActive = false;
@@ -67,7 +67,7 @@ Module.register("MagicMirror-FootballLeagues",
                 return;
             }
 
-            console.log("Switching between leagues: " + leagueIndex + " selecting of " + self.crawledIdsList)
+            console.log("Switching between leagues: Selecting League number: " + (leagueIndex + 1) + " - League ID: " + self.crawledIdsList)
             self.activeId = self.crawledIdsList[leagueIndex];
             setTimeout(function() {
                 self.changeLeague(self, (leagueIndex + 1) % self.crawledIdsList.length);
@@ -83,7 +83,7 @@ Module.register("MagicMirror-FootballLeagues",
             //console.log("Updating Football League");
 
             // return nothing if no data exists
-            if (this.activeId == -1 || this.fixtures.length == 0 || this.fixtures[this.activeId] == undefined)
+            if (this.activeId === -1 || this.matches.length === 0 || this.matches[this.activeId] === undefined)
             {
                 wrapper.innerHTML = '';
 
@@ -92,8 +92,15 @@ Module.register("MagicMirror-FootballLeagues",
                     self.updateDom(1000);
                 }, 1000);
 
+                console.log("Waiting for Data...");
+
                 return wrapper;
             }
+
+            
+
+            console.log("Displaying data of league: " + this.activeId);
+
 
             // Add fontawesome to html head, to use their icons
             var link = document.createElement('link');
@@ -102,13 +109,13 @@ Module.register("MagicMirror-FootballLeagues",
             link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css';
             document.head.appendChild(link);
 
-            //Check if table data exists and tables should be shown, if so, return a tableDom, tableViewActive switches between tables and fixtures
+            //Check if table data exists and tables should be shown, if so, return a tableDom, tableViewActive switches between tables and matches
             if (this.tableViewActive && this.tables[this.activeId] !== undefined && this.config.showTables) 
             {
                 console.log("Displaying table of league: " + this.activeId);
                 //Create encapsuling div
                 var div = document.createElement('div');
-                if (this.config.width != 0)
+                if (this.config.width !== 0)
                     div.style.width = this.config.width;
                 wrapper.appendChild(div);
 
@@ -172,13 +179,11 @@ Module.register("MagicMirror-FootballLeagues",
                 places.appendChild(labelRow);
 
                 // Create Table Content
-                var table = this.tables[this.activeId];
+                var table = this.tables[this.activeId][0].table;
 
                 //console.log(table);
                 if (table.hasOwnProperty('A'))
                 {
-                    console.log("Da Truth");
-                    console.log(table)
                     for (var tab in table)
                     {
                         if (table.hasOwnProperty(tab))
@@ -250,7 +255,7 @@ Module.register("MagicMirror-FootballLeagues",
                             var team_logo_cell = document.createElement('td');
                             var team_logo_image = document.createElement('img');
                             team_logo_image.className = 'MMM-SoccerLiveScore-team_logo';
-                            team_logo_image.src = table[i].crestURI;
+                            team_logo_image.src = table[i].team.crestUrl;
                             team_logo_image.width = 20;
                             team_logo_image.height = 20;
                             team_logo_cell.appendChild(team_logo_image);
@@ -261,7 +266,7 @@ Module.register("MagicMirror-FootballLeagues",
                         {
                             var team_name = document.createElement('td');
                             team_name.setAttribute('align', 'left');
-                            team_name.innerHTML = table[i].teamName;
+                            team_name.innerHTML = table[i].team.name;
                             place.appendChild(team_name);
                         }
 
@@ -281,7 +286,7 @@ Module.register("MagicMirror-FootballLeagues",
                     }
                 }
 
-                // Change next view to fixtures
+                // Change next view to matches
                 this.tableViewActive = false;
                 setTimeout(function ()
                     {
@@ -294,8 +299,8 @@ Module.register("MagicMirror-FootballLeagues",
             }
             else
             {
-                console.log("Displaying fixtures of league: " + this.activeId);
-                // Create Fixture View
+                console.log("Displaying matches of league: " + this.activeId);
+                // Create Matches View
                 var matches = document.createElement('table');
                 matches.className = 'xsmall';
                 var title = document.createElement('header');
@@ -303,18 +308,18 @@ Module.register("MagicMirror-FootballLeagues",
                 title.setAttribute('width', '330px');
                 wrapper.appendChild(title);
                
-                var activeLeagueFixtures = this.fixtures[this.activeId];
+                var activeLeagueMatches = this.matches[this.activeId];
                 var activeLeagueLogos = this.logos[this.activeId];
                 var lastTime = 0;
-                var matchday = this.getMatchDay(activeLeagueFixtures);               
+                var matchday = this.getMatchDay(activeLeagueMatches);               
 
-                // Create a row for every fixture, possible a time row as well
-                for (var i = 0; i < activeLeagueFixtures.length; i++) 
+                // Create a row for every match, possible a time row as well
+                for (var i = 0; i < activeLeagueMatches.length; i++) 
                 {
-                    if (activeLeagueFixtures[i] !== undefined && activeLeagueFixtures[i].matchday === matchday) 
+                    if (activeLeagueMatches[i] !== undefined && activeLeagueMatches[i].matchday === matchday) 
                     {                       
                         // Calculate local time
-                        var time = moment(activeLeagueFixtures[i].date, "YYYY-MM-DDThh:mm:ssZ").format('DD.MM.YY - HH:mm');
+                        var time = moment(activeLeagueMatches[i].utcDate, "YYYY-MM-DDThh:mm:ssZ").format('DD.MM.YY - HH:mm');
 
                         // Build a time row if time is new
                         if (time !== lastTime) {
@@ -340,7 +345,7 @@ Module.register("MagicMirror-FootballLeagues",
                             var team1_name = document.createElement('td');
                             team1_name.setAttribute('align', 'left');
                             team1_name.setAttribute('width', '130px');
-                            team1_name.innerHTML = activeLeagueFixtures[i].homeTeamName;
+                            team1_name.innerHTML = activeLeagueMatches[i].homeTeam.name;
                             match.appendChild(team1_name);
                         }
 
@@ -352,8 +357,7 @@ Module.register("MagicMirror-FootballLeagues",
                             var team1_logo_image = document.createElement('img');
                             team1_logo_image.className = 'MMM-SoccerLiveScore-team1_logo';
                             //team ids are hidden in links
-                            var idString = activeLeagueFixtures[i]._links.homeTeam.href;
-                            idString = idString.substring(idString.lastIndexOf("/") + 1, idString.length);
+                            var idString = activeLeagueMatches[i].homeTeam.id;
                             team1_logo_image.src = activeLeagueLogos[idString];
                             team1_logo_image.width = 20;
                             team1_logo_image.height = 20;
@@ -365,7 +369,7 @@ Module.register("MagicMirror-FootballLeagues",
                         var team1_score = document.createElement('td');
                         team1_score.setAttribute('width', '15px');
                         team1_score.setAttribute('align', 'center');
-                        team1_score.innerHTML = activeLeagueFixtures[i].result.goalsHomeTeam;
+                        team1_score.innerHTML = activeLeagueMatches[i].score.fullTime.homeTeam;
                         var collon = document.createElement('td');
                         collon.className = 'MMM-SoccerLiveScore-divider';
                         collon.innerHTML = ':';
@@ -373,13 +377,13 @@ Module.register("MagicMirror-FootballLeagues",
                         var team2_score = document.createElement('td');
                         team2_score.setAttribute('width', '15px');
                         team2_score.setAttribute('align', 'center');
-                        team2_score.innerHTML = activeLeagueFixtures[i].result.goalsAwayTeam;
+                        team2_score.innerHTML = activeLeagueMatches[i].score.fullTime.awayTeam;
                         match.appendChild(team1_score);
                         match.appendChild(collon);
                         match.appendChild(team2_score);
 
                         // Turns numbers red if game is underway
-                        if (activeLeagueFixtures[i].status === 'IN_PLAY') {
+                        if (activeLeagueMatches[i].status === 'IN_PLAY') {
                             team1_score.classList.add('MMM-SoccerLiveScore-red');
                             collon.classList.add('MMM-SoccerLiveScore-red');
                             team2_score.classList.add('MMM-SoccerLiveScore-red');
@@ -393,8 +397,7 @@ Module.register("MagicMirror-FootballLeagues",
                             var team2_logo_image = document.createElement('img');
                             team2_logo_image.className = 'MMM-SoccerLiveScore-team2_logo';
                             //team ids are hidden in links
-                            var idString = activeLeagueFixtures[i]._links.awayTeam.href;
-                            idString = idString.substring(idString.lastIndexOf("/") + 1, idString.length);
+                            var idString = activeLeagueMatches[i].awayTeam.id;
                             team2_logo_image.src = activeLeagueLogos[idString];
                             team2_logo_image.width = 20;
                             team2_logo_image.height = 20;
@@ -407,7 +410,7 @@ Module.register("MagicMirror-FootballLeagues",
                             var team2_name = document.createElement('td');
                             team2_name.setAttribute('align', 'right');
                             team2_name.setAttribute('width', '130px');
-                            team2_name.innerHTML = activeLeagueFixtures[i].awayTeamName;
+                            team2_name.innerHTML = activeLeagueMatches[i].awayTeam.name;
                             match.appendChild(team2_name);
                         }
 
@@ -416,7 +419,7 @@ Module.register("MagicMirror-FootballLeagues",
                 }
 
                 // Change next view to table if available
-                if (this.tables[this.activeId] != undefined && this.config.showTables) 
+                if (this.tables[this.activeId] !== undefined && this.config.showTables) 
                 {
                     this.tableViewActive = true;
                 }
@@ -430,17 +433,17 @@ Module.register("MagicMirror-FootballLeagues",
             }
         },
 
-        getMatchDay: function (activeLeagueFixtures) 
+        getMatchDay: function (activeLeagueMatches) 
         {
             //Find out the current matchDay
             var startOfThisWeek = moment().startOf('isoWeek');
             var endOfThisWeek = moment().endOf('isoWeek');
             //TODO BUG
-            var dateOfFirstMatch = moment(activeLeagueFixtures[0].date, "YYYY-MM-DDThh:mm:ssZ");
-            var dateOfLastMatch = moment(activeLeagueFixtures[activeLeagueFixtures.length - 1].date, "YYYY-MM-DDThh:mm:ssZ");
+            var dateOfFirstMatch = moment(activeLeagueMatches[0].date, "YYYY-MM-DDThh:mm:ssZ");
+            var dateOfLastMatch = moment(activeLeagueMatches[activeLeagueMatches.length - 1].date, "YYYY-MM-DDThh:mm:ssZ");
 
-            // Matchday: No Fixtures
-            if (activeLeagueFixtures.length == 0) 
+            // Matchday: No Matches
+            if (activeLeagueMatches.length === 0) 
             {
                 return 0;
             }
@@ -454,15 +457,15 @@ Module.register("MagicMirror-FootballLeagues",
             // Matchday: Season has ended, last game was earlier than now
             if (dateOfLastMatch < startOfThisWeek)
             {
-                return activeLeagueFixtures[activeLeagueFixtures.length - 1].matchday;
+                return activeLeagueMatches[activeLeagueMatches.length - 1].matchday;
             }
 
             // Matchday: We are mid season, looking for a game in this week
-            for (var i = 0; i < activeLeagueFixtures.length; i++) 
+            for (var i = 0; i < activeLeagueMatches.length; i++) 
             {
-                if (moment(activeLeagueFixtures[i].date, "YYYY-MM-DDThh:mm:ssZ") > startOfThisWeek) 
+                if (moment(activeLeagueMatches[i].date, "YYYY-MM-DDThh:mm:ssZ") > startOfThisWeek) 
                 {
-                    return activeLeagueFixtures[i].matchday;
+                    return activeLeagueMatches[i].matchday;
                 }
             }
 
@@ -479,8 +482,8 @@ Module.register("MagicMirror-FootballLeagues",
                 case 'LOGO' + this.identifier:
                     this.logos[payload.leagueId] = payload.table;
                     break;
-                case 'FIXTURES' + this.identifier:
-                    this.fixtures[payload.leagueId] = payload.fixtures;
+                case 'MATCHES' + this.identifier:
+                    this.matches[payload.leagueId] = payload.matches;
                     break;
                 case 'LEAGUES' + this.identifier:
                     this.crawledIdsList.push(payload.id);

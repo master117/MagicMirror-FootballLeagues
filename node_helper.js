@@ -15,14 +15,10 @@ module.exports = NodeHelper.create(
             var self = this;
 
             //Calculate maximum polling speed
-            var refreshTime = 5000 * 2 * leagues.length;
-            if (apiKey === "")
-            {
-                refreshTime = 70000 * 2 * leagues.length;;
-            }
-
+            var refreshTime = 60000 * leagues.length;
             console.log("Refresh every: " + refreshTime + "ms.")
 
+            //Check whether unavailable leagues should be shown.
             if (showUnavailable)
             {
                 for (var j = 0; j < leagues.length; j++) 
@@ -31,7 +27,7 @@ module.exports = NodeHelper.create(
 
                     var options = {
                         method: 'GET',
-                        url: 'http://api.football-data.org/v1/competitions/' + league.toString(),
+                        url: 'http://api.football-data.org/v2/competitions/' + league.toString(),
                         headers: {
                             'X-Auth-Token': apiKey
                         }
@@ -43,7 +39,7 @@ module.exports = NodeHelper.create(
                             var competition = JSON.parse(body);
 
                             // Second, start gathering background processes for available league 
-                            self.getFixtures(league, apiKey, refreshTime, id);
+                            self.getMatches(league, apiKey, refreshTime, id);
 
                             if (showTables) 
                             {
@@ -56,9 +52,9 @@ module.exports = NodeHelper.create(
                             }
 
                             var cap = ""
-                            if (competition.hasOwnProperty('caption'))
+                            if (competition.hasOwnProperty('name'))
                             {
-                                cap = competition.caption
+                                cap = competition.name
                             }
 
                             // Third, send notification that leagues exist
@@ -74,7 +70,7 @@ module.exports = NodeHelper.create(
             {
                 var options = {
                     method: 'GET',
-                    url: 'http://api.football-data.org/v1/competitions',
+                    url: 'http://api.football-data.org/v2/competitions',
                     headers: {
                         'X-Auth-Token': apiKey
                     }
@@ -84,7 +80,7 @@ module.exports = NodeHelper.create(
                 request(options,
                     function (error, response, body)
                     {
-                        var competitions = JSON.parse(body);
+                        var competitions = JSON.parse(body).competitions;
 
                         for (var i = 0; i < leagues.length; i++) 
                         {
@@ -94,7 +90,7 @@ module.exports = NodeHelper.create(
                                 if (competitions[j].id === leagues[i]) 
                                 {
                                     // Second, start gathering background processes for available league  
-                                    self.getFixtures(competitions[j].id, apiKey, refreshTime, id);
+                                    self.getMatches(competitions[j].id, apiKey, refreshTime, id);
 
                                     if (showTables) 
                                     {
@@ -109,9 +105,11 @@ module.exports = NodeHelper.create(
                                     // Third, send notification that leagues exist
                                     self.sendSocketNotification('LEAGUES' + id,
                                         {
-                                            name: competitions[j].caption,
+                                            name: competitions[j].name,
                                             id: competitions[j].id
                                         });
+
+                                    break;
                                 }
                             }
                         }
@@ -119,13 +117,13 @@ module.exports = NodeHelper.create(
             }
         },
 
-        // Constantly asks for Fixtures and sends notifications once they arrive
-        getFixtures: function (leagueId, apiKey, refreshTime, id)
+        // Constantly asks for Matches and sends notifications once they arrive
+        getMatches: function (leagueId, apiKey, refreshTime, id)
         {
             var self = this;
             var options = {
                 method: 'GET',
-                url: 'http://api.football-data.org/v1/competitions/' + leagueId.toString() + '/fixtures',
+                url: 'http://api.football-data.org/v2/competitions/' + leagueId.toString() + '/matches',
                 headers: {
                     'X-Auth-Token': apiKey
                 }
@@ -134,19 +132,19 @@ module.exports = NodeHelper.create(
             request(options, function (error, response, body) {
                 try {	
                     var data = JSON.parse(body);
-                    var fix = data.fixtures;
+                    var fix = data.matches;
                 }
                 catch (e)
                 {
-                    console.log("Error with fixture: " + leagueId);
-    		    }              
+                    console.log("Error with matches from: " + leagueId);
+                }              
                 
-                self.sendSocketNotification('FIXTURES' + id, {
+                self.sendSocketNotification('MATCHES' + id, {
                     leagueId: leagueId,
-                    fixtures: fix
+                    matches: fix
                 });
                 setTimeout(function () {
-                    self.getFixtures(leagueId, apiKey, refreshTime);
+                    self.getMatches(leagueId, apiKey, refreshTime);
                 }, refreshTime);
             });
         },
@@ -157,7 +155,7 @@ module.exports = NodeHelper.create(
             var self = this;
             var options = {
                 method: 'GET',
-                url: 'http://api.football-data.org/v1/competitions/' + leagueId.toString() + '/leagueTable',
+                url: 'http://api.football-data.org/v2/competitions/' + leagueId.toString() + '/standings',
                 headers: {
                     'X-Auth-Token': apiKey
                 }
@@ -167,7 +165,7 @@ module.exports = NodeHelper.create(
             {
                 try
                 {
-                    var data = JSON.parse(body);
+                    var data = JSON.parse(body);                  
 
                     if (data.hasOwnProperty('standing'))
                         var tab = data.standing;
@@ -198,25 +196,29 @@ module.exports = NodeHelper.create(
             var self = this;
             var options = {
                 method: 'GET',
-                url: 'http://api.football-data.org/v1/competitions/' + leagueId.toString() + '/teams',
+                url: 'http://api.football-data.org/v2/competitions/' + leagueId.toString() + '/teams',
                 headers: {
                     'X-Auth-Token': apiKey
                 }
             };
+          
             request(options, function (error, response, body)
             {
                 try
                 {
                     var teamLogos = {};
+
                     var data = JSON.parse(body);
                     for (var i = 0; i < data.teams.length; i++)
                     {
-                        var logo = data.teams[i].crestUrl;
-
-                        var idString = data.teams[i]._links.self.href;
-                        idString = idString.substring(idString.lastIndexOf("/") + 1, idString.length);
-
-                        teamLogos[idString] = logo;
+                        try
+                        {
+                            teamLogos[data.teams[i].id] = data.teams[i].crestUrl;
+                        }
+                        catch (e)
+                        {
+                            console.log("Error with logo: " + data.teams[i].id + " - " + data.teams[i].name);
+                        } 
                     }
                 }
                 catch (e)

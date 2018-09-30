@@ -6,7 +6,7 @@ League Table
 
 ![alt text](https://i.imgur.com/8QORZUX.png "Logo Title Text 1")
 
-Fixtures
+Matches
 
 ![alt text](https://i.imgur.com/8dMv25Y.png "Logo Title Text 1")
 
