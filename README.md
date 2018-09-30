@@ -1,12 +1,12 @@
 # MagicMirror-FootballLeagues
-This is Magic [Mirror Module](https://github.com/MichMich/MagicMirror) based on [MMM-SoccerLiveScore](https://github.com/LukeSkywalker92/MMM-SoccerLiveScore). The code is cleaner, commented and uses an open and documented API. Logos are currently not yet implemented, since I haven't found a documented api.
+This is Magic [Mirror Module](https://github.com/MichMich/MagicMirror) losely based on [MMM-SoccerLiveScore](https://github.com/LukeSkywalker92/MMM-SoccerLiveScore). The code is cleaner, commented and uses an open and documented API. Logos are currently not yet implemented, since I haven't found a documented api.
 
 ## Preview
 League Table
 
 ![alt text](https://i.imgur.com/8QORZUX.png "Logo Title Text 1")
 
-Matches
+Fixtures
 
 ![alt text](https://i.imgur.com/8dMv25Y.png "Logo Title Text 1")
 
@@ -29,13 +29,12 @@ This module uses the MagicMirror standard configuration file config.js. Availabl
 
 | Option | Values |
 | - | - |
-| apiKey | Api-Key for [football-data.org](https://api.football-data.org/index) the API used for aquiring data. A free API key can be aquired [here](https://api.football-data.org/client/register). Users with an API key can look for new data (poll) 50 times per minute, users without once per minute. Faster polling may lead to a temporary ban, therefore users without an apiKey will have a restricted polling time. |
+| apiKey | Api-Key for [football-data.org](https://api.football-data.org/index) the API used for aquiring data. A free API key can be aquired [here](https://api.football-data.org/client/register). |
 | leagues | List of league-ID's you want to display. If you put more than one league the module switches automatically between them. A table with possible leagues and the related ID's can be found further down. <br><br> <b>Type:</b> Integer <br> <b> Example: </b> `[ 452, 453 ]` 1. Bundesliga 2017/18, 2. Bundesliga 2017/18 <br> <b> Default: </b> `[ 452 ]` |
 | showNames | Toggles if team-names are shown. <br> <br><b> Default Value: </b> `true` |
 | displayTime | Defines how long one league is shown, if you have more than one League in the leagues-value. In Milliseconds. <br><br><b> Default Value: </b> `60 * 1000` which is 6000 ms or 1 min. |
 | showTables | Toggles if tables are shown if the league has a table. <br><br><b> Default Value: </b> `true` |
-| showLogos | Toggles if Logos are shown. If logos exist! <br><br><b> Default Value: </b> `true` |
-| showUnavailable | Toggles if not active leagues are shown. <br><br><b> Default Value: </b> `false` |
+| showLogos | Toggles if Logos are shown if logos exist! <br><br><b> Default Value: </b> `true` |
 
 Here is an example of an entry in `config.js`
 
@@ -45,21 +44,45 @@ Here is an example of an entry in `config.js`
 	position: 'top_left',
 	header: 'Live-Scores',
 	config: {
-		leagues: [442],
+		leagues: [2002],
         	showNames: true,
         	displayTime: 60 * 1000,
         	showTables: true,
 		showLogos: true,
-		apiKey: 'MySuperSecretKey',
-		showUnavailable: false
+		apiKey: 'MySuperSecretKey'
 	}
 },
 ```
 
+### Data Source - Updated to V2
+All Data is from: [football-data.org](https://www.football-data.org/)
 
+Sadly football-data.org has introduced [Tiers and Pricing](https://www.football-data.org/pricing)
+which means:
 
-### Available IDs / Leagues
-[Updated ID's can be found here](https://api.football-data.org/v1/competitions)
+1. You need a key from their site to use this tool. A free API key can be aquired [here](https://api.football-data.org/client/register).
+
+2. There is only a few leagues available, only 10 updates per minute and delayed scores (not live) in the free version.
+
+### Available FREE IDs / Leagues
+All Updated ID's, including paid ones if you pay for their service, [can be found here](http://api.football-data.org/v2/competitions/).
+
+| ID | League |
+| - | - |
+| 2013 | Série A |
+| 2016 | Championship |
+| 2021 | Premier League |
+| 2001 | UEFA Champions League |
+| 2018 | European Championship |
+| 2015 | Ligue 1 |
+| 2002 | Bundesliga |
+| 2019 | Serie A |
+| 2003 | Eredivisie |
+| 2017 | Primeira Liga |
+| 2014 | Primera Division |
+| 2000 | FIFA World Cup |
+
+Legacy, if using older versions of this tool:
 
 | ID | League |
 | - | - |
