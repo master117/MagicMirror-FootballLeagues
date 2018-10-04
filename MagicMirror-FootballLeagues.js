@@ -310,13 +310,12 @@ Module.register("MagicMirror-FootballLeagues",
                
                 var activeLeagueMatches = this.matches[this.activeId];
                 var activeLeagueLogos = this.logos[this.activeId];
-                var lastTime = 0;
-                var matchday = this.getMatchDay(activeLeagueMatches);               
+                var lastTime = 0;              
 
                 // Create a row for every match, possible a time row as well
                 for (var i = 0; i < activeLeagueMatches.length; i++) 
                 {
-                    if (activeLeagueMatches[i] !== undefined && activeLeagueMatches[i].matchday === matchday) 
+                    if (activeLeagueMatches[i] !== undefined) 
                     {                       
                         // Calculate local time
                         var time = moment(activeLeagueMatches[i].utcDate, "YYYY-MM-DDThh:mm:ssZ").format('DD.MM.YY - HH:mm');

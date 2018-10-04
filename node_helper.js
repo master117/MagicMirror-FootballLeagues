@@ -1,5 +1,6 @@
 var NodeHelper = require('node_helper');
 var request = require('request');
+var moment = require('moment');
 
 module.exports = NodeHelper.create(
     {
@@ -121,9 +122,11 @@ module.exports = NodeHelper.create(
         getMatches: function (leagueId, apiKey, refreshTime, id)
         {
             var self = this;
+            var begin = moment().startOf('isoWeek').format('YYYY-MM-DD');
+            var end = moment().endOf('isoWeek').format('YYYY-MM-DD');
             var options = {
                 method: 'GET',
-                url: 'http://api.football-data.org/v2/competitions/' + leagueId.toString() + '/matches',
+                url: 'http://api.football-data.org/v2/competitions/' + leagueId.toString() + '/matches?dateFrom=' + begin + '&dateTo=' + end,
                 headers: {
                     'X-Auth-Token': apiKey
                 }
