@@ -1,5 +1,5 @@
 # MagicMirror-FootballLeagues
-This is Magic [Mirror Module](https://github.com/MichMich/MagicMirror) losely based on [MMM-SoccerLiveScore](https://github.com/LukeSkywalker92/MMM-SoccerLiveScore). The code is cleaner, commented and uses an open and documented API. Logos are currently not yet implemented, since I haven't found a documented api.
+This [Magic Mirror Module](https://github.com/MichMich/MagicMirror) is losely based on [MMM-SoccerLiveScore](https://github.com/LukeSkywalker92/MMM-SoccerLiveScore). The code is cleaner, commented and uses an open and documented API. Logos are currently not yet implemented, since I haven't found a documented api.
 
 ## Preview
 League Table
@@ -69,7 +69,7 @@ All Updated ID's, including paid ones if you pay for their service, [can be foun
 
 | ID | League |
 | - | - |
-| 2013 | Série A |
+| 2013 | SÃ©rie A |
 | 2016 | Championship |
 | 2021 | Premier League |
 | 2001 | UEFA Champions League |
@@ -86,7 +86,7 @@ Legacy, if using older versions of this tool:
 
 | ID | League |
 | - | - |
-| 444 | Campeonato Brasileiro da Série A | 
+| 444 | Campeonato Brasileiro da SÃ©rie A | 
 | 445 | Premier League 2017/18 |
 | 446 | Championship 2017/18 |
 | 447 | League One 2017/18 |
