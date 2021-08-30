@@ -18,9 +18,9 @@ Navigate into your MagicMirror's modules folder and execute
 git clone https://github.com/master117/MagicMirror-FootballLeagues
 ```
 
-Install request (should be installed by default/MM)
+Install fetch
 ```nodejs
-npm install request
+npm install node-fetch
 ```
 
 
