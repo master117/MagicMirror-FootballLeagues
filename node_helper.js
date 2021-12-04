@@ -107,6 +107,7 @@ module.exports = NodeHelper.create({
 
     // Constantly asks for Matches and sends notifications once they arrive
     getMatches: function (leagueId, apiKey, refreshTime, id) {
+        console.log("Getting Matches...")
         var self = this;
         var begin = moment().startOf('isoWeek').format('YYYY-MM-DD');
         var end = moment().endOf('isoWeek').format('YYYY-MM-DD');
@@ -133,7 +134,7 @@ module.exports = NodeHelper.create({
             })
             .finally(function (e) {
                 setTimeout(function () {
-                    self.getMatches(leagueId, apiKey, refreshTime);
+                    self.getMatches(leagueId, apiKey, refreshTime, id);
                 }, refreshTime);
             });
     },
@@ -169,7 +170,7 @@ module.exports = NodeHelper.create({
             })
             .finally(function (e) {
                 setTimeout(function () {
-                    self.getTable(leagueId, apiKey, refreshTime);
+                    self.getTable(leagueId, apiKey, refreshTime, id);
                 }, refreshTime);
             });
     },

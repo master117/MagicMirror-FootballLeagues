@@ -30,6 +30,10 @@ Module.register("MagicMirror-FootballLeagues",
             return ["MagicMirror-FootballLeagues.css"];
         },
 
+        getNow: function () {
+            return moment().format('DD.MM.YY - HH:mm:ss');
+        },
+
         // Gets automatically called when the module starts
         start: function () {
             this.loadet = false;
@@ -40,6 +44,7 @@ Module.register("MagicMirror-FootballLeagues",
             this.tableViewActive = false;
             this.crawledIdsList = [];
             this.activeId = -1;
+            this.now = this.getNow();
 
             console.log("Started with ids: " + this.config.leagues);
 
@@ -63,7 +68,7 @@ Module.register("MagicMirror-FootballLeagues",
                 return;
             }
 
-            console.log("Switching between leagues: Selecting League number: " + (leagueIndex + 1) + " - League ID: " + self.crawledIdsList)
+            // console.log("Switching between leagues: Selecting League number: " + (leagueIndex + 1) + " - League ID: " + self.crawledIdsList)
             self.activeId = self.crawledIdsList[leagueIndex];
             setTimeout(function () {
                 self.changeLeague(self, (leagueIndex + 1) % self.crawledIdsList.length);
@@ -90,7 +95,7 @@ Module.register("MagicMirror-FootballLeagues",
                 return wrapper;
             }
 
-            console.log("Displaying data of league: " + this.activeId);
+            // console.log("Displaying data of league: " + this.activeId);
 
             // Add fontawesome to html head, to use their icons
             var link = document.createElement('link');
@@ -101,7 +106,7 @@ Module.register("MagicMirror-FootballLeagues",
 
             //Check if table data exists and tables should be shown, if so, return a tableDom, tableViewActive switches between tables and matches
             if(this.tableViewActive && this.tables[this.activeId] !== undefined && this.config.showTables) {
-                console.log("Displaying table of league: " + this.activeId);
+                // console.log("Displaying table of league: " + this.activeId);
                 //Create encapsuling div
                 var div = document.createElement('div');
                 if(this.config.width !== 0)
@@ -111,7 +116,7 @@ Module.register("MagicMirror-FootballLeagues",
                 // Create Table View
                 // Create Header
                 var title = document.createElement('header');
-                title.innerHTML = this.leagueNames[this.activeId];
+                title.innerHTML = this.leagueNames[this.activeId] + " - " + this.now;
                 title.setAttribute('width', '330px');
                 wrapper.appendChild(title);
 
@@ -173,11 +178,11 @@ Module.register("MagicMirror-FootballLeagues",
                     for(var tab in table) {
                         if(table.hasOwnProperty(tab)) {
                             var subtable = table[tab];
-                            console.log(tab);
-                            console.log(subtable);
+                            // console.log(tab);
+                            // console.log(subtable);
 
                             for(var i = 0; i < subtable.length; i++) {
-                                console.log(subtable[i]);
+                                // console.log(subtable[i]);
                                 var place = document.createElement('tr');
 
                                 var number = document.createElement('td');
@@ -268,12 +273,12 @@ Module.register("MagicMirror-FootballLeagues",
                 wrapper.appendChild(places);
             }
             else {
-                console.log("Displaying matches of league: " + this.activeId);
+                // console.log("Displaying matches of league: " + this.activeId);
                 // Create Matches View
                 var matches = document.createElement('table');
                 matches.className = 'xsmall';
                 var title = document.createElement('header');
-                title.innerHTML = this.leagueNames[this.activeId];
+                title.innerHTML = this.leagueNames[this.activeId] + " - " + this.now;
                 title.setAttribute('width', '330px');
                 wrapper.appendChild(title);
 
@@ -437,6 +442,7 @@ Module.register("MagicMirror-FootballLeagues",
                     this.logos[payload.leagueId] = payload.table;
                     break;
                 case 'MATCHES' + this.identifier:
+                    this.now = this.getNow();
                     this.matches[payload.leagueId] = payload.matches;
                     break;
                 case 'LEAGUES' + this.identifier:
@@ -444,6 +450,7 @@ Module.register("MagicMirror-FootballLeagues",
                     this.leagueNames[payload.id] = payload.name;
                     break;
                 case 'TABLE' + this.identifier:
+                    this.now = this.getNow();
                     this.tables[payload.leagueId] = payload.table;
                     break;
             }
