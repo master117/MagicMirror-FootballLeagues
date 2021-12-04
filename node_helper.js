@@ -1,5 +1,4 @@
 var NodeHelper = require('node_helper');
-
 var moment = require('moment');
 const fetch = require('node-fetch');
 
@@ -16,7 +15,7 @@ module.exports = NodeHelper.create({
 
         //Calculate maximum polling speed
         var refreshTime = 60000 * leagues.length;
-        console.log("Refresh every: " + refreshTime + "ms.")
+        console.log("MagicMirror-FootballLeagues is refreshing every: " + refreshTime + "ms.")
 
         //Check whether unavailable leagues should be shown.
         if(showUnavailable) {
@@ -100,7 +99,7 @@ module.exports = NodeHelper.create({
                     }
                 })
                 .catch(function (e) {
-                    console.log("Error fetching leagues, is your api key correct?");
+                    console.log("MagicMirror-FootballLeagues: Error fetching leagues, is your api key correct?");
                     console.log(e);
                 });
         }
@@ -128,12 +127,14 @@ module.exports = NodeHelper.create({
                     leagueId: leagueId,
                     matches: fix
                 });
+            })
+            .catch(function (e) {
+                console.log("MagicMirror-FootballLeagues: Error with matches from: " + leagueId);
+            })
+            .finally(function (e) {
                 setTimeout(function () {
                     self.getMatches(leagueId, apiKey, refreshTime);
                 }, refreshTime);
-            })
-            .catch(function (e) {
-                console.log("Error with matches from: " + leagueId);
             });
     },
 
@@ -162,14 +163,14 @@ module.exports = NodeHelper.create({
                         leagueId: leagueId,
                         table: tab
                     });
-
-                setTimeout(function () {
-                    self.getTable(leagueId, apiKey, refreshTime);
-                },
-                    refreshTime);
             })
             .catch(function (e) {
-                console.log("Error with table: " + leagueId);
+                console.log("MagicMirror-FootballLeagues: Error with table: " + leagueId);
+            })
+            .finally(function (e) {
+                setTimeout(function () {
+                    self.getTable(leagueId, apiKey, refreshTime);
+                }, refreshTime);
             });
     },
 
@@ -200,15 +201,11 @@ module.exports = NodeHelper.create({
                     }
                 }
 
-                self.sendSocketNotification('LOGO' + id,
-                    {
-                        leagueId: leagueId,
-                        table: teamLogos
-                    })
+                self.sendSocketNotification('LOGO' + id, { leagueId: leagueId, table: teamLogos });
             })
             .catch(function (e) {
-                console.log("Error with logos: " + leagueId);
-                console.log("Error loading leaguedata for: " + leagueId.toString());
+                console.log("MagicMirror-FootballLeagues: Error with logos: " + leagueId);
+                console.log("MagicMirror-FootballLeagues: Error loading leaguedata for: " + leagueId.toString());
                 console.log(e);
             });
     },

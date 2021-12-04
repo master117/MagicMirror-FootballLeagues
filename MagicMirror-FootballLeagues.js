@@ -8,7 +8,7 @@ Module.register("MagicMirror-FootballLeagues",
             showNames: true,
             showLogos: true,
             showUnavailable: false,
-            displayTime: 60 * 1000,  
+            displayTime: 60 * 1000,
             width: 0,
             apiKey: ""
         },
@@ -21,19 +21,17 @@ Module.register("MagicMirror-FootballLeagues",
         },
 
         // Gets automatically called when the module starts, library for changing dates in different formats
-        getScripts: function ()
-        {
+        getScripts: function () {
             return ["moment.js"];
         },
 
         // Gets automatically called when the module starts, contains style info
-        getStyles: function() {
+        getStyles: function () {
             return ["MagicMirror-FootballLeagues.css"];
         },
 
         // Gets automatically called when the module starts
-        start: function ()
-        {
+        start: function () {
             this.loadet = false;
             this.logos = {};
             this.matches = {};
@@ -43,25 +41,23 @@ Module.register("MagicMirror-FootballLeagues",
             this.crawledIdsList = [];
             this.activeId = -1;
 
-            console.log("Started with ids: " + this.config.leagues);          
+            console.log("Started with ids: " + this.config.leagues);
 
             // Send our current config to node_helper, starting its polling
             this.sendSocketNotification('CONFIG', {
                 leagues: this.config.leagues, showLogos: this.config.showLogos,
-                showTables: this.config.showTables, apiKey: this.config.apiKey, id: this.identifier, showUnavailable: this.config.showUnavailable });
+                showTables: this.config.showTables, apiKey: this.config.apiKey, id: this.identifier, showUnavailable: this.config.showUnavailable
+            });
 
             // Set the league that should be displayed, starting with the arrays first entry
             this.changeLeague(this, 0);
         },
 
         // Changes league to the one specified by index, oly uses crawled indices
-        changeLeague: function (self, leagueIndex) 
-        {
+        changeLeague: function (self, leagueIndex) {
             // If we have not crawled an ID yet, repeat in 1 second
-            if (self.crawledIdsList.length === 0) 
-            {
-                setTimeout(function ()
-                {
+            if(self.crawledIdsList.length === 0) {
+                setTimeout(function () {
                     self.changeLeague(self, 0);
                 }, 1000);
                 return;
@@ -69,26 +65,23 @@ Module.register("MagicMirror-FootballLeagues",
 
             console.log("Switching between leagues: Selecting League number: " + (leagueIndex + 1) + " - League ID: " + self.crawledIdsList)
             self.activeId = self.crawledIdsList[leagueIndex];
-            setTimeout(function() {
+            setTimeout(function () {
                 self.changeLeague(self, (leagueIndex + 1) % self.crawledIdsList.length);
-                }, self.config.displayTime);
+            }, self.config.displayTime);
         },
 
         // Returns the View, gets called every updateTime by itself through setTimeout
-        getDom: function ()
-        {
+        getDom: function () {
             // Create the base element
             var self = this;
             var wrapper = document.createElement("div");
             //console.log("Updating Football League");
 
             // return nothing if no data exists
-            if (this.activeId === -1 || this.matches.length === 0 || this.matches[this.activeId] === undefined)
-            {
+            if(this.activeId === -1 || this.matches.length === 0 || this.matches[this.activeId] === undefined) {
                 wrapper.innerHTML = '';
 
-                setTimeout(function ()
-                {
+                setTimeout(function () {
                     self.updateDom(1000);
                 }, 1000);
 
@@ -97,10 +90,7 @@ Module.register("MagicMirror-FootballLeagues",
                 return wrapper;
             }
 
-            
-
             console.log("Displaying data of league: " + this.activeId);
-
 
             // Add fontawesome to html head, to use their icons
             var link = document.createElement('link');
@@ -110,12 +100,11 @@ Module.register("MagicMirror-FootballLeagues",
             document.head.appendChild(link);
 
             //Check if table data exists and tables should be shown, if so, return a tableDom, tableViewActive switches between tables and matches
-            if (this.tableViewActive && this.tables[this.activeId] !== undefined && this.config.showTables) 
-            {
+            if(this.tableViewActive && this.tables[this.activeId] !== undefined && this.config.showTables) {
                 console.log("Displaying table of league: " + this.activeId);
                 //Create encapsuling div
                 var div = document.createElement('div');
-                if (this.config.width !== 0)
+                if(this.config.width !== 0)
                     div.style.width = this.config.width;
                 wrapper.appendChild(div);
 
@@ -137,14 +126,12 @@ Module.register("MagicMirror-FootballLeagues",
                 labelRow.appendChild(position);
 
                 //Check if we need a logo row
-                if (this.config.showLogos)
-                {
+                if(this.config.showLogos) {
                     var logo = document.createElement("th");
                     logo.setAttribute('width', '30px');
                     labelRow.appendChild(logo);
                 }
-                else
-                {
+                else {
                     //Stretch position row so we always have the same width if no logos are selected
                     position.setAttribute('width', '60px');
                 }
@@ -182,18 +169,14 @@ Module.register("MagicMirror-FootballLeagues",
                 var table = this.tables[this.activeId][0].table;
 
                 //console.log(table);
-                if (table.hasOwnProperty('A'))
-                {
-                    for (var tab in table)
-                    {
-                        if (table.hasOwnProperty(tab))
-                        {
+                if(table.hasOwnProperty('A')) {
+                    for(var tab in table) {
+                        if(table.hasOwnProperty(tab)) {
                             var subtable = table[tab];
                             console.log(tab);
                             console.log(subtable);
 
-                            for (var i = 0; i < subtable.length; i++) 
-                            {
+                            for(var i = 0; i < subtable.length; i++) {
                                 console.log(subtable[i]);
                                 var place = document.createElement('tr');
 
@@ -202,8 +185,7 @@ Module.register("MagicMirror-FootballLeagues",
                                 place.appendChild(number);
 
 
-                                if (this.config.showLogos)
-                                {
+                                if(this.config.showLogos) {
                                     var team_logo_cell = document.createElement('td');
                                     var team_logo_image = document.createElement('img');
                                     team_logo_image.className = 'MMM-SoccerLiveScore-team_logo';
@@ -214,8 +196,7 @@ Module.register("MagicMirror-FootballLeagues",
                                     place.appendChild(team_logo_cell);
                                 }
 
-                                if (this.config.showNames)
-                                {
+                                if(this.config.showNames) {
                                     var team_name = document.createElement('td');
                                     team_name.setAttribute('align', 'left');
                                     team_name.innerHTML = subtable[i].team;
@@ -239,10 +220,8 @@ Module.register("MagicMirror-FootballLeagues",
                         }
                     }
                 }
-                else
-                {
-                    for (var i = 0; i < table.length; i++) 
-                    {
+                else {
+                    for(var i = 0; i < table.length; i++) {
                         var place = document.createElement('tr');
 
                         var number = document.createElement('td');
@@ -250,8 +229,7 @@ Module.register("MagicMirror-FootballLeagues",
                         place.appendChild(number);
 
 
-                        if (this.config.showLogos)
-                        {
+                        if(this.config.showLogos) {
                             var team_logo_cell = document.createElement('td');
                             var team_logo_image = document.createElement('img');
                             team_logo_image.className = 'MMM-SoccerLiveScore-team_logo';
@@ -262,8 +240,7 @@ Module.register("MagicMirror-FootballLeagues",
                             place.appendChild(team_logo_cell);
                         }
 
-                        if (this.config.showNames)
-                        {
+                        if(this.config.showNames) {
                             var team_name = document.createElement('td');
                             team_name.setAttribute('align', 'left');
                             team_name.innerHTML = table[i].team.name;
@@ -288,17 +265,9 @@ Module.register("MagicMirror-FootballLeagues",
 
                 // Change next view to matches
                 this.tableViewActive = false;
-                setTimeout(function ()
-                    {
-                        self.updateDom(1000);
-                    },
-                    this.config.displayTime / 4);
-
                 wrapper.appendChild(places);
-                return wrapper;
             }
-            else
-            {
+            else {
                 console.log("Displaying matches of league: " + this.activeId);
                 // Create Matches View
                 var matches = document.createElement('table');
@@ -307,21 +276,19 @@ Module.register("MagicMirror-FootballLeagues",
                 title.innerHTML = this.leagueNames[this.activeId];
                 title.setAttribute('width', '330px');
                 wrapper.appendChild(title);
-               
+
                 var activeLeagueMatches = this.matches[this.activeId];
                 var activeLeagueLogos = this.logos[this.activeId];
-                var lastTime = 0;              
+                var lastTime = 0;
 
                 // Create a row for every match, possible a time row as well
-                for (var i = 0; i < activeLeagueMatches.length; i++) 
-                {
-                    if (activeLeagueMatches[i] !== undefined) 
-                    {                       
+                for(var i = 0; i < activeLeagueMatches.length; i++) {
+                    if(activeLeagueMatches[i] !== undefined) {
                         // Calculate local time
                         var time = moment(activeLeagueMatches[i].utcDate, "YYYY-MM-DDThh:mm:ssZ").format('DD.MM.YY - HH:mm');
 
                         // Build a time row if time is new
-                        if (time !== lastTime) {
+                        if(time !== lastTime) {
                             var time_row = document.createElement('tr');
                             var timeCell = document.createElement('td');
 
@@ -340,7 +307,7 @@ Module.register("MagicMirror-FootballLeagues",
                         var match = document.createElement('tr');
 
                         //Shows hometeam name
-                        if (this.config.showNames) {
+                        if(this.config.showNames) {
                             var team1_name = document.createElement('td');
                             team1_name.setAttribute('align', 'left');
                             team1_name.setAttribute('width', '130px');
@@ -349,8 +316,7 @@ Module.register("MagicMirror-FootballLeagues",
                         }
 
                         //Shows hometeam logo
-                        if (this.config.showLogos && activeLeagueLogos !== undefined)
-                        {
+                        if(this.config.showLogos && activeLeagueLogos !== undefined) {
                             var team1_logo_cell = document.createElement('td');
                             team1_logo_cell.setAttribute('width', '20px');
                             var team1_logo_image = document.createElement('img');
@@ -382,15 +348,14 @@ Module.register("MagicMirror-FootballLeagues",
                         match.appendChild(team2_score);
 
                         // Turns numbers red if game is underway
-                        if (activeLeagueMatches[i].status === 'IN_PLAY') {
+                        if(activeLeagueMatches[i].status === 'IN_PLAY') {
                             team1_score.classList.add('MMM-SoccerLiveScore-red');
                             collon.classList.add('MMM-SoccerLiveScore-red');
                             team2_score.classList.add('MMM-SoccerLiveScore-red');
                         }
-                        
+
                         //Shows awayteamlogo
-                        if (this.config.showLogos && activeLeagueLogos !== undefined)
-                        {
+                        if(this.config.showLogos && activeLeagueLogos !== undefined) {
                             var team2_logo_cell = document.createElement('td');
                             team2_logo_cell.setAttribute('width', '20px');
                             var team2_logo_image = document.createElement('img');
@@ -405,7 +370,7 @@ Module.register("MagicMirror-FootballLeagues",
                         }
 
                         //Shows awayteamname
-                        if (this.config.showNames) {
+                        if(this.config.showNames) {
                             var team2_name = document.createElement('td');
                             team2_name.setAttribute('align', 'right');
                             team2_name.setAttribute('width', '130px');
@@ -418,22 +383,19 @@ Module.register("MagicMirror-FootballLeagues",
                 }
 
                 // Change next view to table if available
-                if (this.tables[this.activeId] !== undefined && this.config.showTables) 
-                {
+                if(this.tables[this.activeId] !== undefined && this.config.showTables)
                     this.tableViewActive = true;
-                }
-
-                setTimeout(function() {
-                            self.updateDom(1000);
-                        }, this.config.displayTime / 4);                
 
                 wrapper.appendChild(matches);
-                return wrapper;
             }
+
+            setTimeout(function () {
+                self.updateDom(1000);
+            }, this.config.displayTime / 4);
+            return wrapper;
         },
 
-        getMatchDay: function (activeLeagueMatches) 
-        {
+        getMatchDay: function (activeLeagueMatches) {
             //Find out the current matchDay
             var startOfThisWeek = moment().startOf('isoWeek');
             var endOfThisWeek = moment().endOf('isoWeek');
@@ -442,28 +404,23 @@ Module.register("MagicMirror-FootballLeagues",
             var dateOfLastMatch = moment(activeLeagueMatches[activeLeagueMatches.length - 1].date, "YYYY-MM-DDThh:mm:ssZ");
 
             // Matchday: No Matches
-            if (activeLeagueMatches.length === 0) 
-            {
+            if(activeLeagueMatches.length === 0) {
                 return 0;
             }
 
             // Matchday: Season has not started yet, first game is later than now
-            if (dateOfFirstMatch > endOfThisWeek) 
-            {
+            if(dateOfFirstMatch > endOfThisWeek) {
                 return 1;
             }
 
             // Matchday: Season has ended, last game was earlier than now
-            if (dateOfLastMatch < startOfThisWeek)
-            {
+            if(dateOfLastMatch < startOfThisWeek) {
                 return activeLeagueMatches[activeLeagueMatches.length - 1].matchday;
             }
 
             // Matchday: We are mid season, looking for a game in this week
-            for (var i = 0; i < activeLeagueMatches.length; i++) 
-            {
-                if (moment(activeLeagueMatches[i].date, "YYYY-MM-DDThh:mm:ssZ") > startOfThisWeek) 
-                {
+            for(var i = 0; i < activeLeagueMatches.length; i++) {
+                if(moment(activeLeagueMatches[i].date, "YYYY-MM-DDThh:mm:ssZ") > startOfThisWeek) {
                     return activeLeagueMatches[i].matchday;
                 }
             }
@@ -474,10 +431,8 @@ Module.register("MagicMirror-FootballLeagues",
 
 
         // Receives (constant) updates from background processes from node_helper
-        socketNotificationReceived: function (notification, payload) 
-        {
-            switch (notification) 
-            {
+        socketNotificationReceived: function (notification, payload) {
+            switch(notification) {
                 case 'LOGO' + this.identifier:
                     this.logos[payload.leagueId] = payload.table;
                     break;
